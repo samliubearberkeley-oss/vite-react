@@ -2,6 +2,9 @@
 // This bypasses client-side authentication issues
 // Note: createClient is globally available in Edge Functions - no import needed
 
+// Import Deno's optimized base64 encoder at module level
+import { encodeBase64 } from "https://deno.land/std/encoding/base64.ts";
+
 // 🚨 IRON RULE: NEVER store images in database!
 // 🚨 铁律：严禁把图片传到数据库！
 // ✅ Images MUST go to Storage buckets only
@@ -9,6 +12,9 @@
 // ❌ NEVER store base64, binary data, or image content in DB
 
 module.exports = async function(request) {
+  // Check if we're in production to reduce logging
+  const isProduction = Deno.env.get('ENVIRONMENT') === 'production';
+  
   // CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -122,18 +128,19 @@ Which meme template is MOST SAVAGE and HILARIOUS for this situation?`
         throw new Error(`Failed to load template from Storage: ${downloadError?.message || 'Unknown error'}`);
       }
 
-      console.log('✅ Template downloaded from Storage, size:', imageBlob.size);
+      if (!isProduction) {
+        console.log('✅ Template downloaded from Storage, size:', imageBlob.size);
+      }
 
       // Convert blob to base64 for Gemini (optimized with Deno std lib)
       const imageBuffer = await imageBlob.arrayBuffer();
       
-      // Import Deno's optimized base64 encoder
-      const { encodeBase64 } = await import("https://deno.land/std/encoding/base64.ts");
-      
       // Use Deno's fast base64 encoding (10-100x faster than btoa)
       const imageBase64 = `data:image/jpeg;base64,${encodeBase64(new Uint8Array(imageBuffer))}`;
 
-      console.log('✅ Template converted to base64 successfully');
+      if (!isProduction) {
+        console.log('✅ Template converted to base64 successfully');
+      }
       
       // ✅ STEP 3: Use Gemini to generate meme with text
       console.log('🎨 Step 3: Calling Gemini to add text to meme...');

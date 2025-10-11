@@ -440,26 +440,23 @@ export async function getMemeWithText(analysisResult) {
     };
 
   } catch (error) {
-    console.error('❌ AI meme generation failed, using fallback:', error);
+    console.error('❌ AI meme generation failed:', error);
     
-    // Fallback to preset meme without AI modification
-    const { filename, config } = selectMeme(category, riskScore);
-    const memeText = getFallbackMemeText({ title, riskScore, category });
-    
-    console.warn('⚠️ Using fallback local meme:', filename);
-    
+    // Return error state instead of invalid local paths
     return {
-      imageUrl: filename, // ⚠️ Local fallback path
-      generatedMemeUrl: filename, // ⚠️ Local fallback path
-      baseMemeTemplate: config.name,
-      text: memeText,
+      imageUrl: null,
+      generatedMemeUrl: null,
+      baseMemeTemplate: null,
+      text: 'AI TRIED / GAVE UP',
       config: {
-        name: config.name,
-        emotion: config.emotion,
-        hasExistingText: config.hasText,
-        textPositions: config.textPositions,
+        name: 'error',
+        emotion: 'frustrated',
+        hasExistingText: true,
+        textPositions: ['center'],
         aiGenerated: false
-      }
+      },
+      isError: true,
+      error: error.message
     };
   }
 }

@@ -109,7 +109,18 @@ function ResultCard({ result, onReset }) {
           </div>
 
           {/* Meme Display with AI Text Overlay */}
-          {result.memeUrl && (
+          {result.isError ? (
+            <div className="meme-box">
+              <div className="meme-container error-state">
+                <div className="error-meme">
+                  <div className="error-text">
+                    <div className="error-line">AI TRIED</div>
+                    <div className="error-line">GAVE UP</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : result.memeUrl ? (
             <div className="meme-box">
               <div className="meme-container">
                 <img 
@@ -164,7 +175,7 @@ function ResultCard({ result, onReset }) {
                 })()}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Action Buttons */}
           <div className="pixel-actions">
