@@ -202,14 +202,33 @@ Make it painfully relatable for ${jobTitle}.`,
       console.log('📤 Filename:', filename);
       console.log('📤 Blob size:', blob.size, 'bytes');
       
-      const { data: uploadData, error: uploadError } = await client.storage
-        .from('meme-images')
-        .upload(filename, blob);
-      
-      if (uploadError) {
-        console.error('❌ Storage upload failed:', uploadError);
-        throw new Error(`Storage upload failed: ${uploadError.message}`);
-      }
+      // Add timeout wrapper for Storage upload (large images can timeout)
+      const uploadWithTimeout = async () => {
+        return new Promise(async (resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Storage upload timeout after 45 seconds'));
+          }, 45000); // 45 second timeout for large images
+
+          try {
+            const { data: uploadData, error: uploadError } = await client.storage
+              .from('meme-images')
+              .upload(filename, blob);
+            
+            clearTimeout(timeout);
+            
+            if (uploadError) {
+              reject(new Error(`Storage upload failed: ${uploadError.message}`));
+            } else {
+              resolve(uploadData);
+            }
+          } catch (error) {
+            clearTimeout(timeout);
+            reject(error);
+          }
+        });
+      };
+
+      const uploadData = await uploadWithTimeout();
       
       console.log('✅ Storage upload successful!', uploadData);
       console.log('✅ Upload data keys:', Object.keys(uploadData || {}));
