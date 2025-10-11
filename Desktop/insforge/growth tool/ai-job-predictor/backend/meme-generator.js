@@ -147,36 +147,23 @@ Which meme template is MOST SAVAGE and HILARIOUS for this situation?`
       
       const geminiResponse = await client.ai.images.generate({
         model: 'google/gemini-2.5-flash-image-preview',
-        prompt: `Add sharp, brutal meme text to this template about AI job replacement.
+        prompt: `Add brutal meme text to this template about AI job replacement.
 
-CORE THEME: "You will be replaced by AI"
+JOB: ${jobTitle} (${riskScore}% risk)
+THEME: "You will be replaced by AI"
 
-JOB: ${jobTitle} (${riskScore}% replacement risk)
-ANALYSIS: ${reasoning}
-TIMEFRAME: ${timeframe}
+RULES:
+- 8-15 words, ALL CAPS
+- White text, black outline
+- TOP or BOTTOM position
+- Job-specific humor
 
-TASK: Add sharp, brutal meme text (8-15 words total).
-
-TEXT RULES:
-- 8-15 words total, ALL CAPS
-- Sharp and brutal, classic meme style
-- Position at TOP or BOTTOM of meme
-- White text with black outline
-- Express AI replacement anxiety
-- Use job-specific humor and references
-
-EXAMPLES (NORMAL MEME LENGTH):
+EXAMPLES:
 - "YOUR JOB / AI'S HOBBY"
-- "STILL EMPLOYED / AI LEARNING"
-- "YOU: EXPENSIVE / AI: CHEAP"
-- "HUMAN WORK / AI AUTOMATION"
-- "TRAINING AI / REPLACING YOU"
-- "YOUR SKILLS / AI'S HOBBY"
 - "CODING FOR 8 HOURS / AI IN 8 SECONDS"
 - "YOUR DEGREE / AI'S TRAINING DATA"
-- "HUMAN CREATIVITY / AI'S ALGORITHM"
 
-Focus on the core message: AI is replacing human jobs. Make it painfully relatable and job-specific. Use humor that directly relates to the ${jobTitle} profession.`,
+Make it painfully relatable for ${jobTitle}.`,
         images: [
           { url: imageBase64 }
         ]
