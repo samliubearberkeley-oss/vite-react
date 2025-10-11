@@ -144,23 +144,24 @@ Which meme template is MOST SAVAGE and HILARIOUS for this situation?`
       
       const geminiResponse = await client.ai.images.generate({
         model: 'google/gemini-2.5-flash-image-preview',
-        prompt: `Add brutal meme text to this template about AI job replacement.
+        prompt: `Add meme text to this template about AI job replacement.
 
 JOB: ${jobTitle} (${riskScore}% risk)
 THEME: "You will be replaced by AI"
 
-RULES:
+CRITICAL RULES:
+- Add text ONCE only (no duplicates)
 - 8-15 words, ALL CAPS
-- White text, black outline
-- TOP or BOTTOM position
-- Job-specific humor
+- White text with black outline
+- Position at TOP or BOTTOM
+- Job-specific humor for ${jobTitle}
 
 EXAMPLES:
 - "YOUR JOB / AI'S HOBBY"
 - "CODING FOR 8 HOURS / AI IN 8 SECONDS"
 - "YOUR DEGREE / AI'S TRAINING DATA"
 
-Make it painfully relatable for ${jobTitle}.`,
+IMPORTANT: Add the text only once, do not repeat it.`,
         images: [
           { url: imageBase64 }
         ]
