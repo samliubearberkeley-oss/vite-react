@@ -149,20 +149,21 @@ Which meme template is MOST SAVAGE and HILARIOUS for this situation?`
         model: 'google/gemini-2.5-flash-image-preview',
         prompt: `Add sharp, brutal meme text to this template about AI job replacement.
 
-CORE THEME: "你会被AI替代" (You will be replaced by AI)
+CORE THEME: "You will be replaced by AI"
 
 JOB: ${jobTitle} (${riskScore}% replacement risk)
 ANALYSIS: ${reasoning}
 TIMEFRAME: ${timeframe}
 
-TASK: Add sharp, brutal meme text (5-10 words total).
+TASK: Add sharp, brutal meme text (8-15 words total).
 
 TEXT RULES:
-- 5-10 words total, ALL CAPS
+- 8-15 words total, ALL CAPS
 - Sharp and brutal, classic meme style
 - Position at TOP or BOTTOM of meme
 - White text with black outline
 - Express AI replacement anxiety
+- Use job-specific humor and references
 
 EXAMPLES (NORMAL MEME LENGTH):
 - "YOUR JOB / AI'S HOBBY"
@@ -171,8 +172,11 @@ EXAMPLES (NORMAL MEME LENGTH):
 - "HUMAN WORK / AI AUTOMATION"
 - "TRAINING AI / REPLACING YOU"
 - "YOUR SKILLS / AI'S HOBBY"
+- "CODING FOR 8 HOURS / AI IN 8 SECONDS"
+- "YOUR DEGREE / AI'S TRAINING DATA"
+- "HUMAN CREATIVITY / AI'S ALGORITHM"
 
-Focus on the core message: AI is replacing human jobs. Make it painfully relatable.`,
+Focus on the core message: AI is replacing human jobs. Make it painfully relatable and job-specific. Use humor that directly relates to the ${jobTitle} profession.`,
         images: [
           { url: imageBase64 }
         ]
