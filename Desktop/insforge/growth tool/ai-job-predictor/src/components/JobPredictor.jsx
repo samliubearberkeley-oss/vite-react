@@ -1,101 +1,35 @@
 import { useState } from 'react';
 import './JobPredictor.css';
-import { calculateJobRisk, getMonthsRemaining, getSarcasticAdvice, saveCompleteAnalysis } from '../utils/jobRiskCalculator';
-import { getMemeWithText } from '../utils/memeGenerator';
+import { useJobAnalysis } from '../hooks/useJobAnalysis';
+import { getMonthsRemaining, getSarcasticAdvice } from '../utils/jobRiskCalculator';
 import ResultCard from './ResultCard';
 import LoadingAnimation from './LoadingAnimation';
 
 function JobPredictor() {
   const [jobTitle, setJobTitle] = useState('');
-  const [result, setResult] = useState(null);
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [loadingStage, setLoadingStage] = useState('analyzing');
-  const [loadingProgress, setLoadingProgress] = useState(0);
+  const { 
+    isAnalyzing, 
+    isGeneratingMeme, 
+    result, 
+    error, 
+    progress, 
+    stage,
+    analyzeJob,
+    cancelAnalysis,
+    reset
+  } = useJobAnalysis();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!jobTitle.trim()) return;
     
-    // ✅ 防止重复提交：如果已经在计算中，直接返回
-    if (isCalculating) {
-      console.warn('⚠️ Already calculating, ignoring duplicate submission');
-      return;
-    }
-
-    setIsCalculating(true);
-    setLoadingStage('analyzing');
-    setLoadingProgress(0);
-    
-    try {
-      // Step 1: 使用 GPT-4o AI 分析（不保存到数据库）
-      console.log('🤖 Step 1: Starting GPT-4o AI analysis...');
-      setLoadingProgress(20);
-      const riskData = await calculateJobRisk(jobTitle, null); // 不传predictionId
-      
-      if (riskData) {
-        const months = getMonthsRemaining(riskData.riskScore);
-        const advice = getSarcasticAdvice(riskData.category, riskData.riskScore);
-        
-        // Step 2: 使用 Gemini 生成 meme 并上传到 Storage
-        console.log('🎨 Step 2: Generating meme with Gemini AI...');
-        setLoadingStage('generating');
-        setLoadingProgress(50);
-        const memeData = await getMemeWithText(riskData);
-        
-        // Step 3: 一次性保存完整结果到数据库（只有Gemini成功生成时才保存）
-        console.log('💾 Step 3: Saving complete analysis to database...');
-        setLoadingProgress(80);
-        let predictionId = null;
-        
-        // ✅ 只有当Gemini成功生成并上传到Storage时才保存
-        // 如果是fallback本地路径（/meme/*.jpg），不保存到数据库
-        if (memeData.generatedMemeUrl && !memeData.generatedMemeUrl.startsWith('/meme/')) {
-          console.log('✅ Gemini meme generated successfully, saving to database...');
-          const saved = await saveCompleteAnalysis(
-            jobTitle,
-            riskData.riskScore, 
-            riskData.category,
-            riskData.reasoning,
-            riskData.timeframe,
-            memeData.generatedMemeUrl,  // ✅ 只使用Storage URL
-            memeData.baseMemeTemplate  // 使用的模板名称
-          );
-          predictionId = saved?.id;
-          console.log('✅ Complete analysis saved to database with ID:', predictionId);
-        } else {
-          console.warn('⚠️ Meme generation failed (fallback used), NOT saving to database');
-        }
-        
-        setLoadingProgress(100);
-        // Debug meme data
-        console.log('🎭 Meme data received:', memeData);
-        console.log('🎭 Meme URL being set:', memeData.imageUrl);
-        console.log('🎭 Generated meme URL:', memeData.generatedMemeUrl);
-        
-        setResult({
-          ...riskData,
-          monthsRemaining: months,
-          advice,
-          memeUrl: memeData.imageUrl,
-          memeText: memeData.text,
-          memeConfig: memeData.config,
-          isError: memeData.isError || false  // 传递错误状态
-        });
-        console.log('✅ All steps completed!');
-      }
-    } catch (error) {
-      console.error('❌ Error during analysis:', error);
-      // 显示错误信息，不自动重试
-      alert('AI分析失败，请重试。错误: ' + error.message);
-    } finally {
-      setIsCalculating(false);
-      setLoadingProgress(0);
-    }
+    // Use optimized hook
+    await analyzeJob(jobTitle);
   };
 
   const handleReset = () => {
-    setResult(null);
+    reset();
     setJobTitle('');
   };
 
@@ -181,7 +115,7 @@ function JobPredictor() {
                     onChange={(e) => setJobTitle(e.target.value)}
                     placeholder="TYPE HERE..."
                     className="pixel-input"
-                    disabled={isCalculating}
+                    disabled={isAnalyzing}
                     autoComplete="off"
                     maxLength={30}
                   />
@@ -189,14 +123,23 @@ function JobPredictor() {
                 
                 <button 
                   type="submit" 
-                  className={`pixel-button ${isCalculating ? 'calculating' : ''}`}
-                  disabled={isCalculating || !jobTitle.trim()}
+                  className={`pixel-button ${isAnalyzing ? 'calculating' : ''}`}
+                  disabled={isAnalyzing || !jobTitle.trim()}
                 >
-                  {isCalculating ? '◆ PROCESSING ◆' : '► START'}
+                  {isAnalyzing ? '◆ PROCESSING ◆' : '► START'}
                 </button>
                 
-                {isCalculating && (
-                  <LoadingAnimation stage={loadingStage} progress={loadingProgress} />
+                {isAnalyzing && (
+                  <LoadingAnimation stage={stage} progress={progress} />
+                )}
+                
+                {error && (
+                  <div className="error-message">
+                    ❌ {error}
+                    <button onClick={cancelAnalysis} className="cancel-button">
+                      Cancel
+                    </button>
+                  </div>
                 )}
               </form>
             </div>
@@ -235,7 +178,14 @@ function JobPredictor() {
             </div>
           </div>
         ) : (
-          <ResultCard result={result} onReset={handleReset} />
+          <ResultCard 
+            result={{
+              ...result,
+              monthsRemaining: result ? getMonthsRemaining(result.riskScore) : 0,
+              advice: result ? getSarcasticAdvice(result.category, result.riskScore) : ''
+            }} 
+            onReset={handleReset} 
+          />
         )}
 
         {/* Bottom Pixel Border */}

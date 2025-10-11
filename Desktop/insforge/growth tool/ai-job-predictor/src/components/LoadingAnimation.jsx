@@ -4,9 +4,9 @@ function LoadingAnimation({ stage, progress }) {
   const getStageText = () => {
     switch (stage) {
       case 'analyzing':
-        return 'AI PROCESSING...';
+        return 'AI ANALYZING JOB...';
       case 'generating':
-        return 'CREATING CONTENT...';
+        return 'GENERATING MEME...';
       default:
         return 'INITIALIZING...';
     }

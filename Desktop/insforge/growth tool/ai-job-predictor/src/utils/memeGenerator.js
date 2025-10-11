@@ -305,11 +305,9 @@ Generate meme text:`
 async function generateAIMemeImage(jobTitle, riskScore, category, reasoning) {
   try {
     // Determine meme style based on risk level
-    let memeStyle = '';
     let memePrompt = '';
     
     if (riskScore >= 85) {
-      memeStyle = 'panicking, distressed, chaotic';
       memePrompt = `Create a MEME-STYLE illustration about AI replacing ${jobTitle}. 
 
 STYLE: Internet meme aesthetic - bold colors (red, yellow, black), high contrast, simple shapes, thick outlines

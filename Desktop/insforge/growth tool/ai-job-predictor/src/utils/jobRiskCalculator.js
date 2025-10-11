@@ -210,10 +210,6 @@ async function saveOrUpdatePrediction(jobTitle, riskScore, category, predictionI
   }
 }
 
-// Backward compatibility alias
-async function savePredictionToDatabase(jobTitle, riskScore, category) {
-  await saveOrUpdatePrediction(jobTitle, riskScore, category, null);
-}
 
 export async function calculateJobRisk(jobTitle, predictionId = null) {
   if (!jobTitle || jobTitle.trim().length === 0) {
@@ -401,7 +397,7 @@ export function getMonthsRemaining(riskScore) {
   }
 }
 
-export function getSarcasticAdvice(category, riskScore) {
+export function getSarcasticAdvice(category) {
   const adviceBank = {
     ai_creator: [
       "Congratulations, you're building your own replacement. Very meta.",
@@ -451,7 +447,7 @@ export function getSarcasticAdvice(category, riskScore) {
   return adviceList[Math.floor(Math.random() * adviceList.length)];
 }
 
-export function getMemeUrl(category, riskScore) {
+export function getMemeUrl(category) {
   // Return different meme categories based on risk level
   const memeCategories = {
     ai_creator: [

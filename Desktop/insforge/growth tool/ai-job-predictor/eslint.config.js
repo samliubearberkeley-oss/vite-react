@@ -8,6 +8,7 @@ export default defineConfig([
   globalIgnores(['dist']),
   {
     files: ['**/*.{js,jsx}'],
+    ignores: ['backend/**/*.js'], // Ignore backend Edge Functions
     extends: [
       js.configs.recommended,
       reactHooks.configs['recommended-latest'],

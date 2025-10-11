@@ -6,8 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:optimized": "vite build && node scripts/optimize.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "lint:fix": "eslint . --fix",
+    "preview": "vite preview",
+    "analyze": "npx vite-bundle-analyzer dist",
+    "optimize": "node scripts/optimize.js",
+    "test:performance": "node scripts/performance-test.js"
   },
   "dependencies": {
     "@insforge/sdk": "^0.0.54",
