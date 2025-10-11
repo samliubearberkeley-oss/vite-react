@@ -79,7 +79,8 @@ function JobPredictor() {
           advice,
           memeUrl: memeData.imageUrl,
           memeText: memeData.text,
-          memeConfig: memeData.config
+          memeConfig: memeData.config,
+          isError: memeData.isError || false  // 传递错误状态
         });
         console.log('✅ All steps completed!');
       }

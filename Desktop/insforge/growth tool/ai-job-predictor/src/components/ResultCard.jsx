@@ -109,7 +109,7 @@ function ResultCard({ result, onReset }) {
           </div>
 
           {/* Meme Display with AI Text Overlay */}
-          {result.isError ? (
+          {result.isError || !result.memeUrl ? (
             <div className="meme-box">
               <div className="meme-container error-state">
                 <div className="error-meme">
