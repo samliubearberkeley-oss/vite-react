@@ -124,9 +124,14 @@ Which meme template is MOST SAVAGE and HILARIOUS for this situation?`
 
       console.log('✅ Template downloaded from Storage, size:', imageBlob.size);
 
-      // Convert blob to base64 for Gemini
+      // Convert blob to base64 for Gemini (optimized with Deno std lib)
       const imageBuffer = await imageBlob.arrayBuffer();
-      const imageBase64 = `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(imageBuffer)))}`;
+      
+      // Import Deno's optimized base64 encoder
+      const { encodeBase64 } = await import("https://deno.land/std/encoding/base64.ts");
+      
+      // Use Deno's fast base64 encoding (10-100x faster than btoa)
+      const imageBase64 = `data:image/jpeg;base64,${encodeBase64(new Uint8Array(imageBuffer))}`;
 
       console.log('✅ Template converted to base64 successfully');
       
