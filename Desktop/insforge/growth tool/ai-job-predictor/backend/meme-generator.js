@@ -2,9 +2,6 @@
 // This bypasses client-side authentication issues
 // Note: createClient is globally available in Edge Functions - no import needed
 
-// Import Deno's optimized base64 encoder at module level
-import { encodeBase64 } from "https://deno.land/std/encoding/base64.ts";
-
 // 🚨 IRON RULE: NEVER store images in database!
 // 🚨 铁律：严禁把图片传到数据库！
 // ✅ Images MUST go to Storage buckets only
@@ -132,11 +129,11 @@ Which meme template is MOST SAVAGE and HILARIOUS for this situation?`
         console.log('✅ Template downloaded from Storage, size:', imageBlob.size);
       }
 
-      // Convert blob to base64 for Gemini (optimized with Deno std lib)
+      // Convert blob to base64 for Gemini
       const imageBuffer = await imageBlob.arrayBuffer();
       
-      // Use Deno's fast base64 encoding (10-100x faster than btoa)
-      const imageBase64 = `data:image/jpeg;base64,${encodeBase64(new Uint8Array(imageBuffer))}`;
+      // Use Deno's built-in base64 encoding
+      const imageBase64 = `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(imageBuffer)))}`;
 
       if (!isProduction) {
         console.log('✅ Template converted to base64 successfully');
