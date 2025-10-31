@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Meme Generation Flow</title>
+</head>
+<body>
+    <h1>Test Meme Generation Flow</h1>
+    <button onclick="testFlow()">Test Complete Flow</button>
+    <pre id="result"></pre>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@insforge/sdk@latest';
+        
+        const client = createClient({ 
+            baseUrl: 'https://y3diwbf9.us-east.insforge.app'
+        });
+        
+        window.testFlow = async function() {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Starting test...\n\n';
+            
+            try {
+                // Step 1: Test AI Analysis
+                resultEl.textContent += '📝 Step 1: Testing AI Analysis...\n';
+                const { data: analysisData, error: analysisError } = await client.functions.invoke('ai-analysis', {
+                    body: {
+                        jobTitle: 'Data Engineer'
+                    }
+                });
+                
+                if (analysisError) {
+                    resultEl.textContent += `❌ AI Analysis failed: ${JSON.stringify(analysisError, null, 2)}\n`;
+                    return;
+                }
+                
+                resultEl.textContent += `✅ AI Analysis success:\n${JSON.stringify(analysisData, null, 2)}\n\n`;
+                
+                // Step 2: Test Meme Generation
+                resultEl.textContent += '🎨 Step 2: Testing Meme Generation...\n';
+                const { data: memeData, error: memeError } = await client.functions.invoke('meme-generator', {
+                    body: {
+                        jobTitle: 'Data Engineer',
+                        riskScore: analysisData.data.riskScore,
+                        category: analysisData.data.category,
+                        reasoning: analysisData.data.reasoning,
+                        timeframe: analysisData.data.timeframe
+                    }
+                });
+                
+                if (memeError) {
+                    resultEl.textContent += `❌ Meme Generation failed: ${JSON.stringify(memeError, null, 2)}\n`;
+                    return;
+                }
+                
+                resultEl.textContent += `✅ Meme Generation success:\n${JSON.stringify(memeData, null, 2)}\n\n`;
+                
+                // Step 3: Check if should save to database
+                const generatedMemeUrl = memeData.data.generatedMemeUrl;
+                if (generatedMemeUrl && !generatedMemeUrl.startsWith('/meme/')) {
+                    resultEl.textContent += `✅ Ready to save to database!\n`;
+                    resultEl.textContent += `   - Meme URL: ${generatedMemeUrl}\n`;
+                    resultEl.textContent += `   - Template: ${memeData.data.baseMemeTemplate}\n`;
+                    
+                    // Test saving
+                    resultEl.textContent += '\n💾 Step 3: Testing Database Save...\n';
+                    const { data: saveData, error: saveError } = await client.functions.invoke('save-prediction-v2', {
+                        body: {
+                            jobTitle: 'Data Engineer',
+                            riskScore: analysisData.data.riskScore,
+                            category: analysisData.data.category,
+                            reasoning: analysisData.data.reasoning,
+                            timeframe: analysisData.data.timeframe,
+                            memeUrl: generatedMemeUrl,
+                            baseMemeTemplate: memeData.data.baseMemeTemplate,
+                            generatedMemeUrl: generatedMemeUrl
+                        }
+                    });
+                    
+                    if (saveError) {
+                        resultEl.textContent += `❌ Database save failed: ${JSON.stringify(saveError, null, 2)}\n`;
+                    } else {
+                        resultEl.textContent += `✅ Database save success:\n${JSON.stringify(saveData, null, 2)}\n`;
+                    }
+                } else {
+                    resultEl.textContent += `⚠️ Meme generation failed - fallback used\n`;
+                    resultEl.textContent += `   URL: ${generatedMemeUrl}\n`;
+                    resultEl.textContent += `   NOT saving to database\n`;
+                }
+                
+            } catch (error) {
+                resultEl.textContent += `\n❌ Exception: ${error.message}\n${error.stack}\n`;
+            }
+        };
+    </script>
+</body>
+</html>
+

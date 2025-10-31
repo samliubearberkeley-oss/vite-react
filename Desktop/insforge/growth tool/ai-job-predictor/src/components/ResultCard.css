@@ -1,0 +1,725 @@
+.result-container {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.result-container.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Error State */
+.error-state {
+  background: var(--color-white);
+  border: 2px solid var(--color-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.error-meme {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.5rem;
+  color: var(--color-red);
+  line-height: 1.5;
+}
+
+.error-line {
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 0 var(--color-black);
+}
+
+/* Result Screen */
+.result-screen {
+  background: var(--color-blue);
+  border: var(--color-border) solid var(--color-white);
+  box-shadow: 
+    0 0 0 var(--color-border) var(--color-black),
+    8px 8px 0 0 rgba(0, 0, 0, 0.4);
+  margin-bottom: 2rem;
+}
+
+.screen-header {
+  background: var(--color-yellow);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--color-border) solid var(--color-white);
+}
+
+.screen-dots {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  color: var(--color-blue-deep);  /* 使用深蓝提升对比 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.screen-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.875rem;
+  color: var(--color-black);
+  font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);  /* 轻微阴影增加深度 */
+}
+
+.screen-content {
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Info Blocks (Modular Color Blocks) */
+.info-block {
+  padding: 2rem;
+  border: var(--color-border) solid var(--color-white);
+  text-align: center;
+  position: relative;
+  animation: blockAppear 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.info-block.yellow-block {
+  background: var(--color-yellow);
+  border: var(--color-border) solid rgba(0, 0, 0, 0.3);  /* 黄块加深色内描边 */
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);  /* 内阴影增加深度 */
+}
+
+.info-block.blue-block {
+  background: var(--color-blue);
+}
+
+.info-block.white-block {
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+.info-block.blue-block {
+  background: var(--color-blue);
+  color: var(--color-text-primary);  /* 使用柔和白色 */
+  border: var(--color-border) solid var(--color-border-blue);  /* 亮蓝边框 */
+}
+
+@keyframes blockAppear {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.block-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;  /* 优化：更疏松，更像 DOS 文本 */
+  line-height: 1.6;        /* 优化：增加行高，提升可读性 */
+  text-transform: uppercase;
+}
+
+.yellow-block .block-label {
+  color: var(--color-black);
+}
+
+.blue-block .block-label {
+  color: var(--color-text-yellow);
+  text-shadow: 0 1px 3px var(--color-text-shadow);  /* 轻微阴影提升可读性 */
+}
+
+.white-block .block-label {
+  color: var(--color-blue);
+}
+
+.block-value {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: none;      /* 优化：改为 sentence case，提升可读性 */
+  line-height: 1.6;          /* 保持舒适行高 */
+  letter-spacing: 0.05em;    /* 增加字间距，更像终端 */
+  word-spacing: 0.08em;      /* 增加词间距 */
+}
+
+.yellow-block .block-value {
+  color: var(--color-black);
+}
+
+.blue-block .block-value {
+  color: var(--color-white);
+}
+
+.white-block .block-value {
+  color: var(--color-black);
+}
+
+.block-value.score {
+  font-size: 2.5rem;
+  animation: scoreCount 1s ease-out;
+}
+
+@keyframes scoreCount {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.risk-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  color: var(--color-text-yellow);
+  text-shadow: 0 1px 3px var(--color-text-shadow);  /* 黄字阴影 */
+}
+
+/* Pixel Progress Bar - 黑底优化 */
+.pixel-progress-container {
+  padding: 1rem;
+  background: var(--color-black);
+  border: var(--color-border) solid var(--color-border-light);
+  box-shadow: inset 0 0 30px var(--color-shadow-inner);  /* 内阴影提升层次 */
+}
+
+.progress-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.625rem;
+  color: var(--color-text-yellow);
+  text-shadow: 0 1px 3px var(--color-text-shadow);  /* 黄字阴影 */
+  margin-bottom: 0.75rem;
+}
+
+.pixel-progress-bar {
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--color-white);
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-progress-fill {
+  height: 100%;
+  display: flex;
+  transition: width 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: progressGlow 2s ease-in-out infinite;
+}
+
+@keyframes progressGlow {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2);
+  }
+}
+
+.pixel-block {
+  width: 10%;
+  height: 100%;
+  background: var(--color-yellow);
+  border-right: 2px solid var(--color-black);
+  animation: fillBlock 0.2s ease-out;
+}
+
+@keyframes fillBlock {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Advice Box - System Message 优化 */
+.advice-box {
+  background: var(--color-yellow);
+  border: var(--color-border) solid rgba(0, 0, 0, 0.3);
+  padding: 0;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.08);  /* 柔和内阴影 */
+}
+
+.advice-header {
+  background: var(--color-blue);
+  padding: 0.75rem 1rem;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.625rem;
+  color: var(--color-text-yellow);
+  text-shadow: 0 1px 3px var(--color-text-shadow);  /* 黄字阴影 */
+  border-bottom: var(--color-border) solid var(--color-border-blue);
+}
+
+.advice-content {
+  padding: 1.5rem;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.625rem;
+  line-height: 1.8;          /* 舒适行高 */
+  letter-spacing: 0.05em;    /* DOS 文本间距 */
+  color: var(--color-black);
+  animation: typeText 1.5s steps(60);
+  text-transform: none;      /* 不强制大写，保持可读性 */
+}
+
+@keyframes typeText {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Meme Box */
+.meme-box {
+  border: var(--color-border) solid var(--color-white);
+  padding: 0.5rem;
+  background: var(--color-blue);
+  animation: memeAppear 0.4s ease-out 0.3s both;
+}
+
+.meme-container {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  height: 400px; /* Fixed height for 3:1 ratio */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-white);
+  margin: 0 auto; /* Center the container */
+}
+
+/* Responsive meme container */
+@media (max-width: 768px) {
+  .meme-container {
+    height: 300px; /* Smaller height on mobile */
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .meme-container {
+    height: 250px; /* Even smaller on very small screens */
+    max-width: 100%;
+  }
+}
+
+.pixel-meme {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Show full image without cropping */
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Meme Text Overlay */
+.meme-text-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  padding: 1rem;
+}
+
+.meme-text {
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  text-align: center;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-shadow: 
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    -3px -3px 0 #000,
+    3px -3px 0 #000,
+    -3px 3px 0 #000,
+    3px 3px 0 #000,
+    -4px -4px 0 #000,
+    4px -4px 0 #000,
+    -4px 4px 0 #000,
+    4px 4px 0 #000;
+  padding: 0.5rem 1rem;
+  max-width: 95%;
+  word-wrap: break-word;
+  animation: textAppear 0.5s ease-out 0.5s both;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Default split layout for top/bottom memes (3.jpg, 5.jpeg) */
+.meme-text-overlay.split {
+  justify-content: space-between;
+  padding: 0;
+}
+
+.meme-text.top-text {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  text-align: center;
+}
+
+.meme-text.bottom-text {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  text-align: center;
+}
+
+/* Two Buttons meme (2.jpg) - Text above each button */
+.meme-text-overlay.two-buttons {
+  padding: 0;
+}
+
+.meme-text-overlay.two-buttons .meme-text {
+  position: absolute;
+  top: 5%;
+  width: 35%;
+  text-align: center;
+  font-size: clamp(0.65rem, 1.8vw, 1.1rem);
+  line-height: 1.3;
+  font-weight: 900;
+}
+
+.meme-text-overlay.two-buttons .meme-text.top-text {
+  left: 15%;
+  transform: translateX(-50%);
+}
+
+.meme-text-overlay.two-buttons .meme-text.bottom-text {
+  right: 15%;
+  left: auto;
+  transform: translateX(50%);
+}
+
+/* Stick Figure Talk meme (4.jpg) - Text above each figure */
+.meme-text-overlay.stick-figure {
+  padding: 0;
+}
+
+.meme-text-overlay.stick-figure .meme-text {
+  position: absolute;
+  top: 15%;
+  width: 40%;
+  text-align: center;
+  font-size: clamp(0.7rem, 2vw, 1.3rem);
+  line-height: 1.3;
+  font-weight: 900;
+}
+
+.meme-text-overlay.stick-figure .meme-text.top-text {
+  left: 5%;
+  transform: translateX(0);
+}
+
+.meme-text-overlay.stick-figure .meme-text.bottom-text {
+  right: 5%;
+  left: auto;
+  transform: translateX(0);
+}
+
+/* Drake Style meme (6.jpg) - Text on left side of face */
+.meme-text-overlay.drake-style {
+  padding: 0;
+}
+
+.meme-text-overlay.drake-style .meme-text {
+  position: absolute;
+  left: 5%;
+  width: 48%;
+  text-align: left;
+  padding-left: 1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.6rem);
+  line-height: 1.3;
+}
+
+.meme-text-overlay.drake-style .meme-text.top-text {
+  top: 25%;
+  transform: translateY(-50%);
+}
+
+.meme-text-overlay.drake-style .meme-text.bottom-text {
+  top: 75%;
+  transform: translateY(-50%);
+}
+
+@keyframes textAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes memeAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile responsive meme */
+@media (max-width: 768px) {
+  .pixel-meme {
+    width: 100%;
+    height: auto;
+    object-fit: contain; /* Show full image on mobile */
+    display: block;
+    image-rendering: pixelated;
+    filter: contrast(1.1) saturate(0.9);
+  }
+}
+
+/* Action Buttons */
+.pixel-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pixel-btn {
+  padding: 1.25rem;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  border: var(--color-border) solid var(--color-white);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+}
+
+.retry-btn {
+  background: var(--color-yellow);
+  color: var(--color-black);
+  border: var(--color-border) solid rgba(0, 0, 0, 0.2);
+}
+
+.retry-btn:hover {
+  background: var(--color-yellow-bright);  /* 明黄 */
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    4px 4px 0 0 var(--color-orange),      /* 橙色阴影增强层次 */
+    0 0 25px var(--color-glow-orange);    /* 橙色辉光 */
+}
+
+.share-btn {
+  background: var(--color-blue);
+  color: var(--color-text-primary);
+  border: var(--color-border) solid var(--color-border-blue);  /* 亮蓝边框 */
+}
+
+.share-btn:hover {
+  background: var(--color-accent-blue);
+  color: var(--color-yellow-bright);
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    4px 4px 0 0 var(--color-yellow), 
+    0 0 25px var(--color-glow);
+  border-color: var(--color-yellow);  /* hover时边框变黄 */
+}
+
+.pixel-btn:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Result Status - 优化黑底区块 */
+.result-status {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--color-black);
+  border: var(--color-border) solid var(--color-border-light);
+  margin-top: 2rem;
+  box-shadow: inset 0 0 30px var(--color-shadow-inner);  /* 内阴影提升层次 */
+  position: relative;
+}
+
+/* 添加闪烁光标作为视觉锚点 */
+.result-status::after {
+  content: '█';
+  display: inline-block;
+  margin-left: 8px;
+  animation: cursorBlink 1s steps(2) infinite;
+  color: var(--color-highlight);
+  font-size: 0.75rem;
+}
+
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.blink-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  color: var(--color-yellow);
+  animation: blink 1.5s steps(2) infinite;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+
+.blink-text:hover {
+  color: var(--color-white);
+  text-shadow: 0 0 12px var(--color-yellow), 0 0 20px var(--color-yellow);
+  transform: scale(1.05);
+  animation: none;
+}
+
+.blink-text:active {
+  transform: scale(0.98);
+}
+
+/* Mouse icon animation for result page */
+.blink-text:hover {
+  color: var(--color-white);
+  text-shadow: 0 0 12px var(--color-yellow), 0 0 20px var(--color-yellow);
+  transform: scale(1.05);
+  animation: none;
+}
+
+@keyframes mouseClick {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.8) rotate(5deg); }
+  100% { transform: scale(1); }
+}
+
+/* Clickable text with cursor below for result page */
+.clickable-text {
+  position: relative;
+  display: inline-block;
+}
+
+/* Pixel cursor below INSFORGE on result page */
+.pixel-cursor-below {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 2px;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+}
+
+.blink-text:hover .pixel-cursor-below {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 0, 0.8));
+  animation: cursorBounce 0.6s ease-in-out infinite;
+}
+
+@keyframes cursorBounce {
+  0%, 100% { 
+    transform: translateX(-50%) translateY(0);
+  }
+  50% { 
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .screen-content {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+  
+  .block-value.score {
+    font-size: 2rem;
+  }
+  
+  .advice-content {
+    font-size: 0.5rem;
+    line-height: 1.6;
+  }
+  
+  .pixel-btn {
+    font-size: 0.625rem;
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .screen-content {
+    padding: 1rem;
+  }
+  
+  .meme-container {
+    height: 250px; /* Even smaller on very small screens */
+  }
+  
+  .info-block {
+    padding: 1rem;
+  }
+  
+  .block-value.score {
+    font-size: 1.5rem;
+  }
+  
+  .pixel-actions {
+    grid-template-columns: 1fr;
+  }
+  
+  .screen-title {
+    font-size: 0.625rem;
+  }
+  
+  .advice-content {
+    padding: 1rem;
+  }
+}
