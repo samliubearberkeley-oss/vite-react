@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自动同步数据到 Insforge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .status {
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #f5f5f5;
+      font-family: 'Courier New', monospace;
+    }
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .status.warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .stat-item {
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f5f5f5;
+    }
+    .stat-item.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .stat-item.skip {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .stat-item.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .stat-number {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .config {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 10px;
+    }
+    .config label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .config input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 自动同步数据到 Insforge</h1>
+    <p class="subtitle">将 localStorage 中的数据同步到 Insforge 后端</p>
+    
+    <div class="config">
+      <label for="baseUrl">Insforge 后端地址:</label>
+      <input 
+        type="text" 
+        id="baseUrl" 
+        placeholder="https://your-instance.insforge.app"
+        value="https://pqh4hzpa.us-east.insforge.app"
+      />
+    </div>
+
+    <div id="status" class="status info">准备开始同步...</div>
+    
+    <div class="stats" id="stats" style="display: none;">
+      <div class="stat-item success">
+        <div class="stat-number" id="successCount">0</div>
+        <div class="stat-label">成功</div>
+      </div>
+      <div class="stat-item skip">
+        <div class="stat-number" id="skipCount">0</div>
+        <div class="stat-label">跳过</div>
+      </div>
+      <div class="stat-item error">
+        <div class="stat-number" id="errorCount">0</div>
+        <div class="stat-label">失败</div>
+      </div>
+    </div>
+
+    <button id="syncBtn" onclick="startSync()">开始同步</button>
+  </div>
+
+  <script type="module">
+    let client = null;
+    let stats = { success: 0, skip: 0, error: 0 };
+
+    function log(message, type = 'info') {
+      const statusDiv = document.getElementById('status');
+      const timestamp = new Date().toLocaleTimeString();
+      const className = type;
+      statusDiv.className = `status ${className}`;
+      statusDiv.textContent += `[${timestamp}] ${message}\n`;
+      statusDiv.scrollTop = statusDiv.scrollHeight;
+      console.log(`[${type}]`, message);
+    }
+
+    function updateStats() {
+      document.getElementById('successCount').textContent = stats.success;
+      document.getElementById('skipCount').textContent = stats.skip;
+      document.getElementById('errorCount').textContent = stats.error;
+      document.getElementById('stats').style.display = 'grid';
+    }
+
+    async function dataURLtoBlob(dataURL) {
+      if (dataURL && dataURL.startsWith('data:')) {
+        const response = await fetch(dataURL);
+        return await response.blob();
+      }
+      return null;
+    }
+
+    function findImageInStorage(dog, images) {
+      if (!images || Object.keys(images).length === 0) {
+        return null;
+      }
+
+      if (dog.image_url && !dog.image_url.startsWith('data:') && !dog.image_url.startsWith('http')) {
+        if (images[dog.image_url]) {
+          return images[dog.image_url];
+        }
+      }
+
+      const possibleKeys = Object.keys(images);
+      for (const key of possibleKeys) {
+        if (key.includes(dog.id) || key.includes(dog.user_id)) {
+          return images[key];
+        }
+      }
+
+      if (possibleKeys.length === 1) {
+        return images[possibleKeys[0]];
+      }
+
+      return null;
+    }
+
+    async function checkDuplicate(dog) {
+      try {
+        const { data, error } = await client.database
+          .from('dogs')
+          .select('id')
+          .eq('user_id', dog.user_id)
+          .eq('score', dog.score)
+          .gte('created_at', new Date(new Date(dog.created_at).getTime() - 1000).toISOString())
+          .lte('created_at', new Date(new Date(dog.created_at).getTime() + 1000).toISOString())
+          .limit(1);
+
+        if (error) {
+          return false;
+        }
+
+        return data && data.length > 0;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    window.startSync = async function() {
+      const baseUrl = document.getElementById('baseUrl').value.trim();
+      if (!baseUrl) {
+        log('❌ 请输入 Insforge 后端地址', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('syncBtn');
+      btn.disabled = true;
+      btn.textContent = '同步中...';
+      stats = { success: 0, skip: 0, error: 0 };
+      updateStats();
+
+      log(`📡 连接 Insforge 后端: ${baseUrl}`, 'info');
+
+      try {
+        // 动态导入 Insforge SDK
+        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@insforge/sdk@latest/+esm');
+        client = createClient({ baseUrl });
+        log('✅ SDK 加载成功', 'success');
+
+        // 步骤 1: 同步用户
+        log('\n📋 步骤 1: 同步用户...', 'info');
+        const usersData = localStorage.getItem('mock_db_app_users');
+        if (usersData) {
+          const users = JSON.parse(usersData);
+          log(`找到 ${users.length} 个用户`, 'info');
+          
+          for (let i = 0; i < users.length; i++) {
+            const user = users[i];
+            try {
+              const { error } = await client.database
+                .from('app_users')
+                .insert([{
+                  id: user.id,
+                  created_at: user.created_at,
+                  last_seen: user.last_seen || user.created_at
+                }]);
+
+              if (error) {
+                if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
+                  log(`⏭️ 用户已存在，跳过: ${user.id.substring(0, 8)}...`, 'warning');
+                  stats.skip++;
+                } else {
+                  log(`❌ 迁移用户失败: ${error.message}`, 'error');
+                  stats.error++;
+                }
+              } else {
+                log(`✅ 迁移用户成功: ${user.id.substring(0, 8)}...`, 'success');
+                stats.success++;
+              }
+            } catch (err) {
+              log(`❌ 迁移用户失败: ${err.message}`, 'error');
+              stats.error++;
+            }
+            updateStats();
+          }
+        } else {
+          log('⚠️ 没有找到用户数据', 'warning');
+        }
+
+        // 步骤 2: 同步狗和图片
+        log('\n📋 步骤 2: 同步狗和图片...', 'info');
+        const dogsData = localStorage.getItem('mock_db_dogs');
+        const storageData = localStorage.getItem('mock_storage_dog-images');
+        const images = storageData ? JSON.parse(storageData) : {};
+        
+        if (!dogsData) {
+          log('⚠️ 没有找到狗的数据', 'warning');
+          log('\n✅ 同步完成！（没有数据需要同步）', 'success');
+          btn.disabled = false;
+          btn.textContent = '同步完成';
+          return;
+        }
+
+        const dogs = JSON.parse(dogsData);
+        log(`找到 ${dogs.length} 只狗，${Object.keys(images).length} 张图片`, 'info');
+
+        for (let i = 0; i < dogs.length; i++) {
+          const dog = dogs[i];
+          log(`\n[${i + 1}/${dogs.length}] 处理狗 ${dog.id?.substring(0, 8) || 'unknown'}...`, 'info');
+
+          try {
+            const isDuplicate = await checkDuplicate(dog);
+            if (isDuplicate) {
+              log(`⏭️ 狗已存在，跳过`, 'warning');
+              stats.skip++;
+              updateStats();
+              continue;
+            }
+
+            let imageBlob = null;
+
+            if (dog.image_url && dog.image_url.startsWith('data:')) {
+              imageBlob = await dataURLtoBlob(dog.image_url);
+            } else if (dog.image_url && dog.image_url.startsWith('http')) {
+              try {
+                const response = await fetch(dog.image_url);
+                imageBlob = await response.blob();
+              } catch (err) {
+                log(`⚠️ 无法从 URL 获取图片，尝试从 storage 查找`, 'warning');
+              }
+            }
+            
+            if (!imageBlob) {
+              const storageImage = findImageInStorage(dog, images);
+              if (storageImage) {
+                imageBlob = await dataURLtoBlob(storageImage);
+                log('✅ 从 storage 中找到图片', 'success');
+              }
+            }
+
+            if (!imageBlob) {
+              log('⚠️ 无法找到狗的图片，尝试直接保存元数据', 'warning');
+              if (dog.image_url) {
+                const { error: dbError } = await client.database
+                  .from('dogs')
+                  .insert([{
+                    user_id: dog.user_id,
+                    image_url: dog.image_url,
+                    score: dog.score,
+                    likes: dog.likes || 0,
+                    dislikes: dog.dislikes || 0,
+                    created_at: dog.created_at
+                  }]);
+
+                if (dbError) {
+                  if (dbError.message?.includes('duplicate') || dbError.message?.includes('unique')) {
+                    log('⏭️ 狗已存在（数据库约束），跳过', 'warning');
+                    stats.skip++;
+                  } else {
+                    log(`❌ 数据库插入失败: ${dbError.message}`, 'error');
+                    stats.error++;
+                  }
+                } else {
+                  log('✅ 保存元数据成功', 'success');
+                  stats.success++;
+                }
+              } else {
+                log('❌ 狗没有图片 URL，跳过', 'error');
+                stats.error++;
+              }
+              updateStats();
+              continue;
+            }
+
+            const timestamp = Date.now();
+            const filename = `migrated_${dog.user_id}_${timestamp}_${i}.png`;
+            log(`⬆️ 上传图片: ${filename}`, 'info');
+            
+            const { data: uploadData, error: uploadError } = await client.storage
+              .from('dog-images')
+              .upload(filename, imageBlob);
+
+            if (uploadError) {
+              log(`❌ 图片上传失败: ${uploadError.message}`, 'error');
+              stats.error++;
+              updateStats();
+              continue;
+            }
+
+            const imageUrl = uploadData?.url || uploadData?.data?.url || uploadData;
+            if (!imageUrl) {
+              log('❌ 上传后未返回图片 URL', 'error');
+              stats.error++;
+              updateStats();
+              continue;
+            }
+
+            log(`✅ 图片已上传`, 'success');
+
+            log(`💾 保存到数据库...`, 'info');
+            const { error: dbError } = await client.database
+              .from('dogs')
+              .insert([{
+                user_id: dog.user_id,
+                image_url: imageUrl,
+                score: dog.score,
+                likes: dog.likes || 0,
+                dislikes: dog.dislikes || 0,
+                created_at: dog.created_at
+              }]);
+
+            if (dbError) {
+              if (dbError.message?.includes('duplicate') || dbError.message?.includes('unique')) {
+                log('⏭️ 狗已存在（数据库约束），跳过', 'warning');
+                stats.skip++;
+              } else {
+                log(`❌ 数据库插入失败: ${dbError.message}`, 'error');
+                stats.error++;
+              }
+            } else {
+              log(`✅ 狗迁移成功!`, 'success');
+              stats.success++;
+            }
+            updateStats();
+          } catch (err) {
+            log(`❌ 迁移失败: ${err.message}`, 'error');
+            stats.error++;
+            updateStats();
+          }
+        }
+
+        // 同步完成
+        log('\n\n🎉 同步完成!', 'success');
+        log(`✅ 成功: ${stats.success}`, 'success');
+        log(`⏭️ 跳过: ${stats.skip}`, 'warning');
+        log(`❌ 失败: ${stats.error}`, stats.error > 0 ? 'error' : 'info');
+
+        if (stats.success > 0 || stats.skip > 0) {
+          log('\n💡 提示：如果同步成功，可以清除 localStorage', 'info');
+        }
+
+        btn.disabled = false;
+        btn.textContent = '同步完成，点击重新同步';
+
+      } catch (err) {
+        log(`\n❌ 同步失败: ${err.message}`, 'error');
+        log('错误详情: ' + JSON.stringify(err, null, 2), 'error');
+        btn.disabled = false;
+        btn.textContent = '同步失败，点击重试';
+      }
+    };
+
+    // 检查是否有数据需要同步
+    window.addEventListener('DOMContentLoaded', () => {
+      const dogsData = localStorage.getItem('mock_db_dogs');
+      const usersData = localStorage.getItem('mock_db_app_users');
+      const storageData = localStorage.getItem('mock_storage_dog-images');
+      
+      const hasData = (dogsData && JSON.parse(dogsData).length > 0) || 
+                      (usersData && JSON.parse(usersData).length > 0) ||
+                      (storageData && Object.keys(JSON.parse(storageData)).length > 0);
+
+      if (hasData) {
+        log('✅ 检测到需要同步的数据', 'success');
+        log('点击"开始同步"按钮开始同步...', 'info');
+      } else {
+        log('⚠️ 未检测到需要同步的数据', 'warning');
+        log('请先在主应用中绘制并保存一些狗', 'info');
+      }
+    });
+  </script>
+</body>
+</html>
+

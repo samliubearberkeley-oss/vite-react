@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Crayon/Chalkboard Theme Styles */
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Comic Sans MS', 'Marker Felt', cursive, sans-serif;
+  background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
+  margin: 0;
+}
+
+/* Chalkboard texture effect */
+.chalkboard-bg {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 3px
+    );
+}
+
+/* Crayon stroke effect */
+.crayon-text {
+  text-shadow: 
+    2px 2px 0px rgba(0, 0, 0, 0.1),
+    1px 1px 0px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+}
+
+/* Paper texture */
+.paper-texture {
+  background-image: 
+    radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.05) 1px, transparent 0);
+  background-size: 10px 10px;
+}
+
+/* Hand-drawn border */
+.hand-drawn-border {
+  position: relative;
+}
+
+.hand-drawn-border::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid currentColor;
+  border-radius: 20px;
+  background: transparent;
+  clip-path: polygon(
+    0% 2%, 3% 1%, 7% 2%, 12% 1%, 18% 2%, 
+    25% 1%, 32% 2%, 40% 1%, 48% 2%, 56% 1%, 
+    64% 2%, 72% 1%, 80% 2%, 88% 1%, 95% 2%, 
+    98% 1%, 100% 2%, 
+    100% 98%, 98% 99%, 95% 98%, 88% 99%, 80% 98%,
+    72% 99%, 64% 98%, 56% 99%, 48% 98%, 40% 99%,
+    32% 98%, 25% 99%, 18% 98%, 12% 99%, 7% 98%,
+    3% 99%, 0% 98%
+  );
+  pointer-events: none;
+}
+
+/* Smooth animations */
+* {
+  transition: all 0.3s ease;
+}

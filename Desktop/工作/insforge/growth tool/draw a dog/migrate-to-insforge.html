@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migrate Data to Insforge</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .container {
+      background: white;
+      color: #333;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h1 {
+      text-align: center;
+      color: #667eea;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+    .btn-danger {
+      background: #f56565;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #e53e3e;
+    }
+    #status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f7fafc;
+      min-height: 200px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+    .success { color: #48bb78; }
+    .error { color: #f56565; }
+    .info { color: #4299e1; }
+    .warning { color: #ed8936; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Migrate Data to Insforge</h1>
+    <p>This tool will migrate all dogs from localStorage to your Insforge backend.</p>
+    
+    <button class="btn-primary" onclick="checkData()">1. Check LocalStorage Data</button>
+    <button class="btn-primary" onclick="migrateData()">2. Migrate to Insforge</button>
+    <button class="btn-danger" onclick="clearLocalStorage()">⚠️ Clear LocalStorage (After Migration)</button>
+    
+    <div id="status"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@insforge/sdk@latest/+esm';
+
+    const INSFORGE_BASE_URL = 'https://pqh4hzpa.us-east.insforge.app';
+    const client = createClient({ baseUrl: INSFORGE_BASE_URL });
+
+    function log(message, type = 'info') {
+      const statusDiv = document.getElementById('status');
+      const timestamp = new Date().toLocaleTimeString();
+      const className = type;
+      statusDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+      statusDiv.scrollTop = statusDiv.scrollHeight;
+    }
+
+    async function dataURLtoBlob(dataURL) {
+      const res = await fetch(dataURL);
+      return await res.blob();
+    }
+
+    window.checkData = function() {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = '';
+      
+      log('🔍 Checking localStorage data...', 'info');
+      
+      // Check dogs
+      const dogsData = localStorage.getItem('mock_db_dogs');
+      if (dogsData) {
+        const dogs = JSON.parse(dogsData);
+        log(`✅ Found ${dogs.length} dogs in localStorage`, 'success');
+        dogs.forEach((dog, index) => {
+          log(`  ${index + 1}. Dog ID: ${dog.id}, Score: ${Math.round(dog.score * 100)}%, User: ${dog.user_id?.substring(0, 8)}...`, 'info');
+        });
+      } else {
+        log('❌ No dogs found in localStorage', 'warning');
+      }
+      
+      // Check users
+      const usersData = localStorage.getItem('mock_db_app_users');
+      if (usersData) {
+        const users = JSON.parse(usersData);
+        log(`\n✅ Found ${users.length} users in localStorage`, 'success');
+      } else {
+        log('❌ No users found in localStorage', 'warning');
+      }
+
+      // Check storage
+      const storageData = localStorage.getItem('mock_storage_dog-images');
+      if (storageData) {
+        const storage = JSON.parse(storageData);
+        const imageCount = Object.keys(storage).length;
+        log(`\n✅ Found ${imageCount} images in localStorage`, 'success');
+      } else {
+        log('❌ No images found in localStorage', 'warning');
+      }
+    };
+
+    window.migrateData = async function() {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = '';
+      
+      log('🚀 Starting migration to Insforge...', 'info');
+      log(`📡 Backend: ${INSFORGE_BASE_URL}\n`, 'info');
+      
+      try {
+        // Step 1: Migrate users
+        log('📋 Step 1: Migrating users...', 'info');
+        const usersData = localStorage.getItem('mock_db_app_users');
+        if (usersData) {
+          const users = JSON.parse(usersData);
+          log(`Found ${users.length} users to migrate`, 'info');
+          
+          for (const user of users) {
+            try {
+              const { data, error } = await client.database
+                .from('app_users')
+                .insert([{
+                  id: user.id,
+                  created_at: user.created_at,
+                  last_seen: user.last_seen || user.created_at
+                }])
+                .select()
+                .single();
+              
+              if (error) {
+                log(`  ⚠️ User ${user.id.substring(0, 8)}... might already exist or error: ${error.message}`, 'warning');
+              } else {
+                log(`  ✅ Migrated user: ${user.id.substring(0, 8)}...`, 'success');
+              }
+            } catch (err) {
+              log(`  ❌ Error migrating user: ${err.message}`, 'error');
+            }
+          }
+        } else {
+          log('  ⚠️ No users to migrate', 'warning');
+        }
+        
+        // Step 2: Migrate dogs (with images)
+        log('\n📋 Step 2: Migrating dogs and images...', 'info');
+        const dogsData = localStorage.getItem('mock_db_dogs');
+        if (!dogsData) {
+          log('  ⚠️ No dogs to migrate', 'warning');
+          return;
+        }
+        
+        const dogs = JSON.parse(dogsData);
+        log(`Found ${dogs.length} dogs to migrate`, 'info');
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (let i = 0; i < dogs.length; i++) {
+          const dog = dogs[i];
+          log(`\n  [${i + 1}/${dogs.length}] Processing dog ${dog.id}...`, 'info');
+          
+          try {
+            // Convert base64 image to blob
+            const imageBlob = await dataURLtoBlob(dog.image_url);
+            log(`    📦 Converted image to blob (${Math.round(imageBlob.size / 1024)}KB)`, 'info');
+            
+            // Upload image to storage
+            const filename = `migrated_dog_${dog.user_id}_${Date.now()}_${i}.png`;
+            const { data: uploadData, error: uploadError } = await client.storage
+              .from('dog-images')
+              .upload(filename, imageBlob);
+            
+            if (uploadError) {
+              log(`    ❌ Image upload failed: ${uploadError.message}`, 'error');
+              errorCount++;
+              continue;
+            }
+            
+            const imageUrl = uploadData.url;
+            log(`    ✅ Image uploaded: ${imageUrl.substring(0, 60)}...`, 'success');
+            
+            // Insert dog record to database
+            const { data: dbData, error: dbError } = await client.database
+              .from('dogs')
+              .insert([{
+                user_id: dog.user_id,
+                image_url: imageUrl,
+                score: dog.score,
+                likes: dog.likes || 0,
+                dislikes: dog.dislikes || 0,
+                created_at: dog.created_at
+              }])
+              .select()
+              .single();
+            
+            if (dbError) {
+              log(`    ❌ Database insert failed: ${dbError.message}`, 'error');
+              errorCount++;
+              continue;
+            }
+            
+            log(`    ✅ Dog migrated successfully! New ID: ${dbData.id}`, 'success');
+            successCount++;
+            
+          } catch (err) {
+            log(`    ❌ Error: ${err.message}`, 'error');
+            errorCount++;
+          }
+        }
+        
+        log(`\n\n🎉 Migration complete!`, 'success');
+        log(`✅ Successfully migrated: ${successCount} dogs`, 'success');
+        if (errorCount > 0) {
+          log(`⚠️ Failed: ${errorCount} dogs`, 'warning');
+        }
+        log(`\n💡 You can now clear localStorage and reload the app!`, 'info');
+        
+      } catch (err) {
+        log(`\n❌ Migration failed: ${err.message}`, 'error');
+        console.error(err);
+      }
+    };
+
+    window.clearLocalStorage = function() {
+      if (!confirm('⚠️ Are you sure you want to clear ALL localStorage data? Make sure migration was successful first!')) {
+        return;
+      }
+      
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = '';
+      
+      log('🗑️ Clearing localStorage...', 'warning');
+      
+      localStorage.removeItem('mock_db_dogs');
+      localStorage.removeItem('mock_db_app_users');
+      localStorage.removeItem('mock_db_users');
+      localStorage.removeItem('mock_storage_dog-images');
+      
+      log('✅ LocalStorage cleared!', 'success');
+      log('🔄 Please reload the main app to start fresh with Insforge backend.', 'info');
+    };
+
+    // Auto-check data on load
+    window.addEventListener('load', () => {
+      setTimeout(checkData, 500);
+    });
+  </script>
+</body>
+</html>
+
