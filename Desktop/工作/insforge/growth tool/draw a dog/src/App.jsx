@@ -6,6 +6,7 @@ import Rankings from './routes/Rankings';
 import MyDogs from './routes/MyDogs';
 import UserInfo from './components/UserInfo';
 import AutoMigrate from './components/AutoMigrate';
+import InsforgeCredit from './components/InsforgeCredit';
 import { useUserStore } from './store/useUserStore';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
       >
         <AutoMigrate />
         <UserInfo />
+        <InsforgeCredit />
         <Routes>
           <Route path="/" element={<Draw />} />
           <Route path="/park" element={<DogPark />} />
