@@ -288,7 +288,7 @@ const CanvasBoard = forwardRef(function CanvasBoard({ onScoreChange }, ref) {
       </div>
       
       <p className="mt-3 md:mt-4 text-sm md:text-base lg:text-lg text-gray-600 text-center px-2 md:px-4">
-        🎨 Draw your dog here! Each stroke stays on the canvas.
+        🎨 Draw your dog here!
       </p>
     </div>
   );
