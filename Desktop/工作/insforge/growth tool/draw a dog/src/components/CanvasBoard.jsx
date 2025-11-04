@@ -264,11 +264,11 @@ const CanvasBoard = forwardRef(function CanvasBoard({ onScoreChange }, ref) {
   }));
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-2xl p-5 md:p-6 paper-texture w-full mx-auto">
-      <div className="flex justify-end mb-4">
+    <div className="relative bg-white rounded-2xl shadow-2xl p-4 md:p-5 lg:p-6 paper-texture w-full mx-auto">
+      <div className="flex justify-end mb-4 md:mb-5 mt-1 md:mt-2">
         <button
           onClick={clearCanvas}
-          className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white px-3 py-1.5 rounded-lg crayon-text shadow-lg text-xs md:text-sm font-bold transition-all"
+          className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg crayon-text shadow-lg text-xs md:text-sm font-bold transition-all"
         >
           🗑️ Clear Canvas
         </button>
@@ -287,7 +287,7 @@ const CanvasBoard = forwardRef(function CanvasBoard({ onScoreChange }, ref) {
         />
       </div>
       
-      <p className="mt-4 text-base md:text-lg text-gray-600 text-center px-4">
+      <p className="mt-3 md:mt-4 text-sm md:text-base lg:text-lg text-gray-600 text-center px-2 md:px-4">
         🎨 Draw your dog here! Each stroke stays on the canvas.
       </p>
     </div>
