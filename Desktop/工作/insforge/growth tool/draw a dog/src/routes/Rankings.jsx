@@ -26,7 +26,7 @@ export default function Rankings() {
       netScore: (dog.likes || 0) - (dog.dislikes || 0)
     }));
 
-    // Top Cute: Highest net scores (most liked)
+    // Top Cute: Highest net scores (most liked) - Show all dogs
     const cute = [...dogsWithNetScore]
       .filter(d => d.score >= 0.63)
       .sort((a, b) => {
@@ -35,8 +35,7 @@ export default function Rankings() {
           return b.netScore - a.netScore;
         }
         return b.score - a.score;
-      })
-      .slice(0, 10);
+      });
 
     // Unhinged: Most controversial (highest engagement regardless of net score)
     const unh = [...dogsWithNetScore]
@@ -87,7 +86,7 @@ export default function Rankings() {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 justify-items-center">
-                {topCute.slice(0, 5).map((dog, index) => (
+                {topCute.map((dog, index) => (
                   <div key={dog.id || `cute-${index}`} className="relative w-full max-w-[200px]">
                     <DogCard dog={dog} index={index} showRank={true} />
                   </div>
