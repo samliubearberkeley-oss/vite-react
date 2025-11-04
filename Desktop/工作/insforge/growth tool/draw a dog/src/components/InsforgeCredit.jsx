@@ -1,17 +1,24 @@
 /**
- * InsforgeCredit - Small credit link in bottom-right corner
+ * InsforgeCredit - Credit link with logo in bottom-right corner
  */
 export default function InsforgeCredit() {
   return (
-    <div className="fixed bottom-2 right-2 md:bottom-3 md:right-3 z-40">
+    <div className="fixed bottom-3 right-3 md:bottom-4 md:right-4 z-40">
       <a
         href="https://insforge.dev/"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[10px] md:text-xs text-white/70 hover:text-white transition-colors font-medium"
+        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         title="Powered by Insforge"
       >
-        Powered by <span className="font-bold">Insforge</span>
+        <span className="text-xs md:text-sm text-gray-900 font-medium">
+          Powered by
+        </span>
+        <img 
+          src="/insforge-logo.jpeg" 
+          alt="Insforge" 
+          className="h-4 md:h-5 w-auto"
+        />
       </a>
     </div>
   );
