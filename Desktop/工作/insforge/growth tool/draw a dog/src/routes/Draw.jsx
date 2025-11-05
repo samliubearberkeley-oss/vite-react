@@ -74,85 +74,88 @@ export default function Draw() {
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <div className="max-w-7xl mx-auto w-full h-full flex flex-col p-4 md:p-6 lg:p-8 pb-0">
-        {/* Header - Adjusted spacing to avoid overlap with UserInfo */}
-        <div className="text-center mb-2 md:mb-4 lg:mb-5 flex-shrink-0 pt-2 md:pt-0">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold crayon-text text-white mb-1 md:mb-2 drop-shadow-lg whitespace-nowrap">
-            🐶 Draw a Dog! 🐶
-          </h1>
-          <p className="text-sm md:text-base lg:text-lg text-white drop-shadow whitespace-nowrap">
-            Draw, score, and make it run! 🏃
-          </p>
-        </div>
+    <div className="h-screen flex flex-col overflow-hidden relative">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '140px' }}>
+        <div className="max-w-7xl mx-auto w-full p-4 md:p-6 lg:p-8">
+          {/* Header - Adjusted spacing to avoid overlap with UserInfo */}
+          <div className="text-center mb-2 md:mb-4 lg:mb-5 pt-2 md:pt-0">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold crayon-text text-white mb-1 md:mb-2 drop-shadow-lg whitespace-nowrap">
+              🐶 Draw a Dog! 🐶
+            </h1>
+            <p className="text-sm md:text-base lg:text-lg text-white drop-shadow whitespace-nowrap">
+              Draw, score, and make it run! 🏃
+            </p>
+          </div>
 
-        {/* Main Content - Scrollable with padding */}
-        <div className="flex flex-col lg:flex-row gap-3 md:gap-6 lg:gap-8 flex-1 min-h-0 overflow-y-auto pb-4">
-          {/* Canvas - Larger on desktop */}
-          <div className="w-full lg:flex-[5] flex items-center justify-center min-h-0">
-            <div className="w-full max-w-xl lg:max-w-2xl">
-              <CanvasBoard ref={canvasBoardRef} onScoreChange={handleScoreChange} />
+          {/* Main Content */}
+          <div className="flex flex-col lg:flex-row gap-3 md:gap-6 lg:gap-8">
+            {/* Canvas - Larger on desktop */}
+            <div className="w-full lg:flex-[5] flex items-center justify-center">
+              <div className="w-full max-w-xl lg:max-w-2xl">
+                <CanvasBoard ref={canvasBoardRef} onScoreChange={handleScoreChange} />
+              </div>
+            </div>
+
+            {/* Score Bar - On top for mobile, sidebar for desktop */}
+            <div className="w-full lg:flex-[3] flex items-center justify-center lg:items-start">
+              <div className="w-full max-w-md">
+                <ScoreBar score={score} />
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Score Bar - On top for mobile, sidebar for desktop */}
-          <div className="w-full lg:flex-[3] flex items-center justify-center lg:items-start">
-            <div className="w-full max-w-md">
-              <ScoreBar score={score} />
-            </div>
-          </div>
+      {/* Fixed Bottom Section - Always visible at bottom of screen */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#98D8C8] via-[#98D8C8] to-transparent pt-3 pb-2 space-y-2 z-30" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+        {/* Action Button - Fixed, always visible */}
+        <div className="text-center px-4">
+          <button
+            onClick={handleMakeItRun}
+            disabled={score < 0.63 || isUploading}
+            className={`
+              w-full max-w-md mx-auto px-4 py-2.5 text-base font-bold rounded-xl crayon-text shadow-xl
+              transition-all transform duration-300
+              ${score >= 0.63 && !isUploading
+                ? 'bg-green-500 hover:bg-green-600 text-white hover:scale-105 active:scale-95 shadow-green-300 animate-pulse'
+                : 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-60'
+              }
+            `}
+          >
+            {isUploading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="animate-spin">⏳</span>
+                Uploading...
+              </span>
+            ) : score >= 0.63 ? (
+              <>🏃 Make it Run! 🏃</>
+            ) : (
+              <>✏️ Keep Drawing! (Need 63%)</>
+            )}
+          </button>
         </div>
 
-        {/* Fixed Bottom Section - Always visible, sticky at bottom */}
-        <div className="flex-shrink-0 bg-gradient-to-t from-[#98D8C8] to-transparent pt-3 pb-2 space-y-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
-          {/* Action Button - Optimized for mobile, always visible */}
-          <div className="text-center">
-            <button
-              onClick={handleMakeItRun}
-              disabled={score < 0.63 || isUploading}
-              className={`
-                w-full max-w-xs md:max-w-md px-4 py-2.5 md:px-3 md:py-1.5 text-base md:text-base font-bold rounded-xl md:rounded-lg crayon-text shadow-xl
-                transition-all transform duration-300
-                ${score >= 0.63 && !isUploading
-                  ? 'bg-green-500 hover:bg-green-600 text-white hover:scale-105 active:scale-95 shadow-green-300 animate-pulse'
-                  : 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-60'
-                }
-              `}
-            >
-              {isUploading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⏳</span>
-                  Uploading...
-                </span>
-              ) : score >= 0.63 ? (
-                <>🏃 Make it Run! 🏃</>
-              ) : (
-                <>✏️ Keep Drawing! (Need 63%)</>
-              )}
-            </button>
-          </div>
-
-          {/* Navigation Links - Always visible on mobile */}
-          <div className="flex justify-center gap-2 text-white flex-wrap">
-            <button
-              onClick={() => navigate('/park')}
-              className="px-3 py-2 text-sm bg-white bg-opacity-90 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 flex-1 max-w-[30%]"
-            >
-              🏞️ Dog Park
-            </button>
-            <button
-              onClick={() => navigate('/rankings')}
-              className="px-3 py-2 text-sm bg-white bg-opacity-90 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 flex-1 max-w-[30%]"
-            >
-              🏆 Rankings
-            </button>
-            <button
-              onClick={() => navigate('/mydogs')}
-              className="px-3 py-2 text-sm bg-white bg-opacity-90 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 flex-1 max-w-[30%]"
-            >
-              📁 My Dogs
-            </button>
-          </div>
+        {/* Navigation Links - Fixed at bottom */}
+        <div className="flex justify-center gap-2 px-4">
+          <button
+            onClick={() => navigate('/park')}
+            className="px-3 py-2 text-sm bg-white bg-opacity-95 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md text-gray-800 flex-1"
+          >
+            🏞️ Dog Park
+          </button>
+          <button
+            onClick={() => navigate('/rankings')}
+            className="px-3 py-2 text-sm bg-white bg-opacity-95 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md text-gray-800 flex-1"
+          >
+            🏆 Rankings
+          </button>
+          <button
+            onClick={() => navigate('/mydogs')}
+            className="px-3 py-2 text-sm bg-white bg-opacity-95 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md text-gray-800 flex-1"
+          >
+            📁 My Dogs
+          </button>
         </div>
       </div>
     </div>
