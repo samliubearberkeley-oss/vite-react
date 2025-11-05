@@ -74,10 +74,10 @@ export default function Draw() {
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden p-4 md:p-6 lg:p-8" style={{ paddingBottom: 'max(1rem, calc(1rem + env(safe-area-inset-bottom)))' }}>
-      <div className="max-w-7xl mx-auto w-full h-full flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
+      <div className="max-w-7xl mx-auto w-full h-full flex flex-col p-4 md:p-6 lg:p-8 pb-0">
         {/* Header - Adjusted spacing to avoid overlap with UserInfo */}
-        <div className="text-center mb-3 md:mb-4 lg:mb-5 flex-shrink-0 pt-2 md:pt-0">
+        <div className="text-center mb-2 md:mb-4 lg:mb-5 flex-shrink-0 pt-2 md:pt-0">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold crayon-text text-white mb-1 md:mb-2 drop-shadow-lg whitespace-nowrap">
             🐶 Draw a Dog! 🐶
           </h1>
@@ -86,8 +86,8 @@ export default function Draw() {
           </p>
         </div>
 
-        {/* Main Content - Scrollable */}
-        <div className="flex flex-col lg:flex-row gap-4 md:gap-6 lg:gap-8 flex-1 min-h-0 overflow-y-auto">
+        {/* Main Content - Scrollable with padding */}
+        <div className="flex flex-col lg:flex-row gap-3 md:gap-6 lg:gap-8 flex-1 min-h-0 overflow-y-auto pb-4">
           {/* Canvas - Larger on desktop */}
           <div className="w-full lg:flex-[5] flex items-center justify-center min-h-0">
             <div className="w-full max-w-xl lg:max-w-2xl">
@@ -103,15 +103,15 @@ export default function Draw() {
           </div>
         </div>
 
-        {/* Fixed Bottom Section - Always visible on mobile */}
-        <div className="flex-shrink-0 mt-3 md:mt-3 lg:mt-4 space-y-2 md:space-y-2">
-          {/* Action Button - Optimized for mobile */}
-          <div className="text-center px-2">
+        {/* Fixed Bottom Section - Always visible, sticky at bottom */}
+        <div className="flex-shrink-0 bg-gradient-to-t from-[#98D8C8] to-transparent pt-3 pb-2 space-y-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+          {/* Action Button - Optimized for mobile, always visible */}
+          <div className="text-center">
             <button
               onClick={handleMakeItRun}
               disabled={score < 0.63 || isUploading}
               className={`
-                w-full max-w-xs md:max-w-none px-4 py-3 md:px-3 md:py-1.5 text-base md:text-base font-bold rounded-xl md:rounded-lg crayon-text shadow-xl
+                w-full max-w-xs md:max-w-md px-4 py-2.5 md:px-3 md:py-1.5 text-base md:text-base font-bold rounded-xl md:rounded-lg crayon-text shadow-xl
                 transition-all transform duration-300
                 ${score >= 0.63 && !isUploading
                   ? 'bg-green-500 hover:bg-green-600 text-white hover:scale-105 active:scale-95 shadow-green-300 animate-pulse'
@@ -132,23 +132,23 @@ export default function Draw() {
             </button>
           </div>
 
-          {/* Navigation Links - Optimized for mobile */}
-          <div className="flex justify-center gap-2 md:gap-3 text-white flex-wrap px-2 pb-2 md:pb-1" style={{ paddingBottom: 'max(0.5rem, calc(0.5rem + env(safe-area-inset-bottom) * 0.5))' }}>
+          {/* Navigation Links - Always visible on mobile */}
+          <div className="flex justify-center gap-2 text-white flex-wrap">
             <button
               onClick={() => navigate('/park')}
-              className="px-3 py-1.5 md:px-2 md:py-1 text-sm md:text-xs bg-white bg-opacity-90 md:bg-opacity-25 rounded-lg hover:bg-opacity-100 md:hover:bg-opacity-35 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 md:text-white"
+              className="px-3 py-2 text-sm bg-white bg-opacity-90 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 flex-1 max-w-[30%]"
             >
               🏞️ Dog Park
             </button>
             <button
               onClick={() => navigate('/rankings')}
-              className="px-3 py-1.5 md:px-2 md:py-1 text-sm md:text-xs bg-white bg-opacity-90 md:bg-opacity-25 rounded-lg hover:bg-opacity-100 md:hover:bg-opacity-35 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 md:text-white"
+              className="px-3 py-2 text-sm bg-white bg-opacity-90 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 flex-1 max-w-[30%]"
             >
               🏆 Rankings
             </button>
             <button
               onClick={() => navigate('/mydogs')}
-              className="px-3 py-1.5 md:px-2 md:py-1 text-sm md:text-xs bg-white bg-opacity-90 md:bg-opacity-25 rounded-lg hover:bg-opacity-100 md:hover:bg-opacity-35 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 md:text-white"
+              className="px-3 py-2 text-sm bg-white bg-opacity-90 rounded-lg hover:bg-opacity-100 crayon-text font-bold transition-all shadow-md hover:shadow-lg text-gray-800 flex-1 max-w-[30%]"
             >
               📁 My Dogs
             </button>
