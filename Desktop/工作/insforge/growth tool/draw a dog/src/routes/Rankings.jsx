@@ -72,7 +72,7 @@ export default function Rankings() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-4">
           {/* Top Cute Section */}
           <div className="mb-8">
             <h2 className="text-xl md:text-2xl font-bold crayon-text text-white mb-4 text-center drop-shadow">
@@ -116,28 +116,28 @@ export default function Rankings() {
               </div>
             )}
           </div>
+        </div>
 
-          {/* Navigation - Inside scrollable area */}
-          <div className="flex justify-center gap-3 md:gap-4 mt-8 pt-6 pb-4 border-t border-white border-opacity-20">
-            <button
-              onClick={() => navigate('/')}
-              className="px-5 py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all"
-            >
-              🎨 Draw a Dog
-            </button>
-            <button
-              onClick={() => navigate('/park')}
-              className="px-5 py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all"
-            >
-              🏞️ Dog Park
-            </button>
-            <button
-              onClick={() => navigate('/mydogs')}
-              className="px-5 py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all"
-            >
-              📁 My Dogs
-            </button>
-          </div>
+        {/* Navigation - Fixed at bottom for mobile, normal for desktop */}
+        <div className="flex-shrink-0 flex justify-center gap-2 md:gap-3 lg:gap-4 mt-2 md:mt-4 pt-3 md:pt-6 pb-2 md:pb-4 border-t border-white border-opacity-20 flex-wrap">
+          <button
+            onClick={() => navigate('/')}
+            className="px-4 py-2 md:px-5 md:py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all text-gray-800"
+          >
+            🎨 Draw a Dog
+          </button>
+          <button
+            onClick={() => navigate('/park')}
+            className="px-4 py-2 md:px-5 md:py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all text-gray-800"
+          >
+            🏞️ Dog Park
+          </button>
+          <button
+            onClick={() => navigate('/mydogs')}
+            className="px-4 py-2 md:px-5 md:py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all text-gray-800"
+          >
+            📁 My Dogs
+          </button>
         </div>
       </div>
     </div>

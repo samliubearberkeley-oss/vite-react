@@ -222,23 +222,23 @@ export default function DogPark() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="mt-4 flex justify-center gap-3 md:gap-4 flex-shrink-0">
+        {/* Navigation - Optimized for mobile */}
+        <div className="mt-4 flex justify-center gap-2 md:gap-3 lg:gap-4 flex-shrink-0 flex-wrap">
           <button
             onClick={() => navigate('/')}
-            className="px-5 py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all"
+            className="px-4 py-2 md:px-5 md:py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all text-gray-800"
           >
             🎨 Draw a Dog
           </button>
           <button
             onClick={() => navigate('/rankings')}
-            className="px-5 py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all"
+            className="px-4 py-2 md:px-5 md:py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all text-gray-800"
           >
             🏆 Rankings
           </button>
           <button
             onClick={() => navigate('/mydogs')}
-            className="px-5 py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all"
+            className="px-4 py-2 md:px-5 md:py-2.5 bg-white bg-opacity-90 rounded-xl hover:bg-opacity-100 crayon-text font-bold shadow-lg text-sm md:text-base transition-all text-gray-800"
           >
             📁 My Dogs
           </button>
