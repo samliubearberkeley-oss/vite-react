@@ -1,4 +1,5 @@
 import { insforge } from './insforgeClient';
+import { INSFORGE_CONFIG } from './config';
 
 /**
  * Register a new user ID in the backend
@@ -8,40 +9,44 @@ import { insforge } from './insforgeClient';
  */
 export async function registerUser(userId) {
   try {
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
     // Check if user already exists
-    const { data: existing, error: checkError } = await insforge.database
-      .from('app_users')
-      .select('id')
-      .eq('id', userId)
-      .maybeSingle(); // Use maybeSingle() for checking existence
+    const checkResponse = await fetch(`${baseUrl}/api/database/records/app_users?select=id&id=eq.${userId}`, {
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      }
+    });
 
-    // If error occurs during check (but not "not found"), handle it
-    if (checkError && checkError.code !== 'PGRST116') {
-      throw checkError;
+    if (checkResponse.ok) {
+      const existing = await checkResponse.json();
+      if (existing && existing.length > 0) {
+        return { success: true, userId, isNew: false };
+      }
     }
 
-    // If user exists, return it
-    if (existing) {
-      return { success: true, userId, isNew: false };
-    }
-
-    // Register new user - Insforge SDK format
-    const { data, error } = await insforge.database
-      .from('app_users')
-      .insert([{
+    // Register new user
+    const insertResponse = await fetch(`${baseUrl}/api/database/records/app_users`, {
+      method: 'POST',
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
         id: userId,
         created_at: new Date().toISOString(),
         last_seen: new Date().toISOString(),
-      }])
-      .select()
-      .single();
+      })
+    });
 
-    if (error) {
-      // If it's a unique constraint violation, generate a new ID
-      if (error.code === '23505' || error.message?.includes('duplicate') || error.code === 'PGRST301') {
+    if (!insertResponse.ok) {
+      const errorText = await insertResponse.text();
+      if (errorText.includes('duplicate') || errorText.includes('23505')) {
         throw new Error('USER_ID_COLLISION');
       }
-      throw error;
+      throw new Error(errorText);
     }
 
     return { success: true, userId, isNew: true };
@@ -57,15 +62,16 @@ export async function registerUser(userId) {
  */
 export async function updateLastSeen(userId) {
   try {
-    // Insforge SDK format - update returns { data, error }
-    const { error } = await insforge.database
-      .from('app_users')
-      .update({ last_seen: new Date().toISOString() })
-      .eq('id', userId);
-
-    if (error) {
-      console.error('Error updating last seen:', error);
-    }
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
+    await fetch(`${baseUrl}/api/database/records/app_users?id=eq.${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ last_seen: new Date().toISOString() })
+    });
   } catch (error) {
     console.error('Error updating last seen:', error);
     // Don't throw - this is non-critical
@@ -79,18 +85,20 @@ export async function updateLastSeen(userId) {
  */
 export async function getUserStats(userId) {
   try {
-    // Insforge SDK format - returns { data, error }
-    const { data, error } = await insforge.database
-      .from('dogs')
-      .select('id, likes')
-      .eq('user_id', userId);
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
+    const response = await fetch(`${baseUrl}/api/database/records/dogs?select=id,likes&user_id=eq.${userId}`, {
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      }
+    });
 
-    if (error) {
-      console.error('Error getting user stats:', error);
+    if (!response.ok) {
       return { dogCount: 0, totalLikes: 0 };
     }
 
-    const dogs = data || [];
+    const dogs = await response.json() || [];
     const dogCount = dogs.length;
     const totalLikes = dogs.reduce((sum, dog) => sum + (dog.likes || 0), 0);
 

@@ -29,10 +29,11 @@ A viral web app where users draw dogs, get AI-scored, and watch them run in a sh
 npm install
 ```
 
-2. **Set up environment variables**:
-Create `.env` file:
+2. **Set up environment variables** (Optional - defaults are already set):
+Create `.env` file if you want to override defaults:
 ```
-VITE_INSFORGE_PROJECT_ID=your_project_id
+VITE_INSFORGE_BASE_URL=https://pqh4hzpa.us-east.insforge.app
+VITE_INSFORGE_API_KEY=ik_93eb600137227f074aa025378a0f2b7f
 ```
 
 3. **Set up Insforge**:
@@ -115,6 +116,39 @@ src/
 - **Layer 2**: Backend database PRIMARY KEY constraint
 - **Layer 3**: localStorage persistence per device
 - See `docs/USER_UNIQUENESS.md` for detailed explanation
+
+## 🚀 Deploy to Vercel
+
+### Quick Deploy
+
+1. **Push to GitHub** (if not already):
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin your-repo-url
+git push -u origin main
+```
+
+2. **Deploy to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - **Environment Variables**: Set in Vercel Dashboard → Project Settings → Environment Variables:
+     - `VITE_INSFORGE_BASE_URL` = `https://pqh4hzpa.us-east.insforge.app`
+     - `VITE_INSFORGE_API_KEY` = `ik_93eb600137227f074aa025378a0f2b7f`
+   - Deploy! 🎉
+
+3. **Or via CLI**:
+```bash
+npm i -g vercel
+vercel --prod
+```
+
+### Why it works
+- ✅ **100% Static Frontend**: All React code runs in the browser
+- ✅ **Cloud Backend**: Insforge handles all database and storage operations
+- ✅ **No Server Needed**: Vercel just serves HTML/JS/CSS files
+- ✅ **Direct API Calls**: Client-side fetch to Insforge REST API with apikey header
 
 ## 🚧 Next Steps
 

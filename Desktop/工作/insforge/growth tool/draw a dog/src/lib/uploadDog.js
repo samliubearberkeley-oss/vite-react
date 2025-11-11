@@ -1,4 +1,5 @@
 import { insforge } from './insforgeClient';
+import { INSFORGE_CONFIG } from './config';
 
 /**
  * Upload a dog drawing to Insforge
@@ -9,11 +10,13 @@ import { insforge } from './insforgeClient';
  */
 export async function uploadDog(imageBlob, score, userId) {
   try {
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
     // Generate a unique filename
     const timestamp = Date.now();
     const filename = `dog_${userId}_${timestamp}.png`;
     
-    // Upload image to Insforge Storage - SDK returns { data, error }
+    // Upload image to Insforge Storage - SDK might work for storage
     const { data: uploadData, error: uploadError } = await insforge.storage
       .from('dog-images')
       .upload(filename, imageBlob);
@@ -29,28 +32,39 @@ export async function uploadDog(imageBlob, score, userId) {
       throw new Error('No image URL returned from upload');
     }
 
-    // Save metadata to database - Insforge SDK format
+    // Save metadata to database with direct fetch
     console.log('[uploadDog] Inserting dog to database:', { user_id: userId, image_url: imageUrl, score });
-    const { data: dbData, error: dbError } = await insforge.database
-      .from('dogs')
-      .insert([{
+    
+    const insertResponse = await fetch(`${baseUrl}/api/database/records/dogs`, {
+      method: 'POST',
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
         user_id: userId,
         image_url: imageUrl,
         score: score,
         created_at: new Date().toISOString(),
-      }])
-      .select()
-      .single();
+        likes: 0,
+        dislikes: 0
+      })
+    });
 
-    console.log('[uploadDog] Database insert result:', { dbData, dbError });
+    console.log('[uploadDog] Database insert status:', insertResponse.status);
 
-    if (dbError) {
-      throw new Error(`Database save failed: ${dbError.message || dbError}`);
+    if (!insertResponse.ok) {
+      const errorText = await insertResponse.text();
+      throw new Error(`Database save failed: ${errorText}`);
     }
 
-    console.log('[uploadDog] Successfully saved dog with id:', dbData.id);
+    const dbData = await insertResponse.json();
+    const savedDog = Array.isArray(dbData) ? dbData[0] : dbData;
+    
+    console.log('[uploadDog] Successfully saved dog with id:', savedDog.id);
     return {
-      id: dbData.id,
+      id: savedDog.id,
       imageUrl: imageUrl,
     };
   } catch (error) {
@@ -66,29 +80,32 @@ export async function uploadDog(imageBlob, score, userId) {
 export async function fetchAllDogs() {
   try {
     console.log('[fetchAllDogs] Starting fetch...');
-    // Insforge SDK format - returns { data, error }
-    const result = await insforge.database
-      .from('dogs')
-      .select('*')
-      .order('created_at', { ascending: false });
+    
+    // Direct fetch with apikey header to bypass SDK JWT issue
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
+    const response = await fetch(`${baseUrl}/api/database/records/dogs?select=*&order=created_at.desc`, {
+      method: 'GET',
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      }
+    });
 
-    console.log('[fetchAllDogs] Raw result:', result, 'type:', typeof result);
+    console.log('[fetchAllDogs] Response status:', response.status);
 
-    // Handle both { data, error } format and direct array return
-    const { data, error } = result && typeof result === 'object' && ('data' in result || 'error' in result)
-      ? result
-      : { data: result, error: null };
-
-    console.log('[fetchAllDogs] Parsed data:', data, 'error:', error);
-
-    if (error) {
-      console.error('[fetchAllDogs] Error fetching dogs:', error);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[fetchAllDogs] Error response:', errorText);
       return [];
     }
 
+    const data = await response.json();
+    console.log('[fetchAllDogs] Raw data:', data, 'type:', typeof data);
+
     // Ensure we return an array
     const dogs = Array.isArray(data) ? data : (data ? [data] : []);
-    console.log('[fetchAllDogs] Returning', dogs.length, 'dogs:', dogs);
+    console.log('[fetchAllDogs] Returning', dogs.length, 'dogs');
     return dogs;
   } catch (error) {
     console.error('[fetchAllDogs] Exception:', error);
@@ -103,19 +120,20 @@ export async function fetchAllDogs() {
  */
 export async function fetchDogsByUser(userId) {
   try {
-    // Insforge SDK format - returns { data, error }
-    const { data, error } = await insforge.database
-      .from('dogs')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
+    const response = await fetch(`${baseUrl}/api/database/records/dogs?select=*&user_id=eq.${userId}&order=created_at.desc`, {
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      }
+    });
 
-    if (error) {
-      console.error('Error fetching user dogs:', error);
+    if (!response.ok) {
       return [];
     }
 
-    return data || [];
+    return await response.json() || [];
   } catch (error) {
     console.error('Error fetching user dogs:', error);
     return [];
@@ -161,24 +179,29 @@ function setUserVote(userId, dogId, voteType) {
  */
 export async function likeDog(dogId, userId) {
   try {
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
     // Check current vote
     const currentVote = await getUserVote(userId, dogId);
 
-    // First fetch current dog to get current counts - Insforge SDK format
-    const { data: currentDog, error: fetchError } = await insforge.database
-      .from('dogs')
-      .select('*')
-      .eq('id', dogId)
-      .maybeSingle();
+    // First fetch current dog to get current counts
+    const fetchResponse = await fetch(`${baseUrl}/api/database/records/dogs?select=*&id=eq.${dogId}`, {
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      }
+    });
 
-    if (fetchError) {
-      throw fetchError;
-    }
-
-    if (!currentDog) {
+    if (!fetchResponse.ok) {
       throw new Error('Dog not found');
     }
 
+    const dogs = await fetchResponse.json();
+    if (!dogs || dogs.length === 0) {
+      throw new Error('Dog not found');
+    }
+
+    const currentDog = dogs[0];
     let newLikes = currentDog.likes || 0;
     let newDislikes = currentDog.dislikes || 0;
     let newVoteStatus = null;
@@ -198,13 +221,15 @@ export async function likeDog(dogId, userId) {
       newVoteStatus = 'like';
     }
 
-    // Update the dog - Insforge SDK format
-    const { error } = await insforge.database
-      .from('dogs')
-      .update({ likes: newLikes, dislikes: newDislikes })
-      .eq('id', dogId);
-
-    if (error) throw error;
+    // Update the dog
+    await fetch(`${baseUrl}/api/database/records/dogs?id=eq.${dogId}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ likes: newLikes, dislikes: newDislikes })
+    });
 
     // Save user vote
     setUserVote(userId, dogId, newVoteStatus);
@@ -229,24 +254,29 @@ export async function likeDog(dogId, userId) {
  */
 export async function dislikeDog(dogId, userId) {
   try {
+    const { baseUrl, apiKey } = INSFORGE_CONFIG;
+    
     // Check current vote
     const currentVote = await getUserVote(userId, dogId);
 
-    // First fetch current dog to get current counts - Insforge SDK format
-    const { data: currentDog, error: fetchError } = await insforge.database
-      .from('dogs')
-      .select('*')
-      .eq('id', dogId)
-      .maybeSingle();
+    // First fetch current dog to get current counts
+    const fetchResponse = await fetch(`${baseUrl}/api/database/records/dogs?select=*&id=eq.${dogId}`, {
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      }
+    });
 
-    if (fetchError) {
-      throw fetchError;
-    }
-
-    if (!currentDog) {
+    if (!fetchResponse.ok) {
       throw new Error('Dog not found');
     }
 
+    const dogs = await fetchResponse.json();
+    if (!dogs || dogs.length === 0) {
+      throw new Error('Dog not found');
+    }
+
+    const currentDog = dogs[0];
     let newLikes = currentDog.likes || 0;
     let newDislikes = currentDog.dislikes || 0;
     let newVoteStatus = null;
@@ -266,13 +296,15 @@ export async function dislikeDog(dogId, userId) {
       newVoteStatus = 'dislike';
     }
 
-    // Update the dog - Insforge SDK format
-    const { error } = await insforge.database
-      .from('dogs')
-      .update({ likes: newLikes, dislikes: newDislikes })
-      .eq('id', dogId);
-
-    if (error) throw error;
+    // Update the dog
+    await fetch(`${baseUrl}/api/database/records/dogs?id=eq.${dogId}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ likes: newLikes, dislikes: newDislikes })
+    });
 
     // Save user vote
     setUserVote(userId, dogId, newVoteStatus);
